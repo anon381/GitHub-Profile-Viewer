@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+// Language icons mapping
 const LANGUAGE_ICONS = {
   JavaScript: { fill: '#f7df1e', svg: '<circle cx="12" cy="12" r="11" fill="#f7df1e" />' },
   TypeScript: { fill: '#3178c6', svg: '<rect x="2" y="2" width="20" height="20" rx="4" fill="#3178c6" />' },
