@@ -9,7 +9,7 @@ export default function SearchBar({ username, setUsername, token, setToken, onSu
         required
         aria-label="GitHub username"
       />
-      {/* Optional token input */}
+      {/* Optional token-input */}
       <button type="submit" disabled={loading || !username} aria-label="Search" className="accent-btn">
         {loading ? 'Searching…' : 'Search'}
       </button>
