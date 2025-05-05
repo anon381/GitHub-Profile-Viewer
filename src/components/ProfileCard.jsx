@@ -1,7 +1,7 @@
 export default function ProfileCard({ profile }) {
   if (!profile) return null;
   return (
-    // Profile card container
+    // Profile card-container
     <section className="profile-card panel" aria-labelledby="profile-heading">
       <div className="avatar-wrap">
         <img src={profile.avatar_url} alt={profile.login} className="avatar" loading="lazy" />
