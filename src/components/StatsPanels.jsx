@@ -5,7 +5,7 @@ const panels = (login) => [
   { alt: 'GitHub Trophies', src: `https://github-profile-trophy.vercel.app/?username=${login}&theme=onedark&no-frame=true&row=2&column=3` },
   { alt: 'Contribution Graph', src: `https://ghchart.rshah.org/646cff/${login}` },
 ];
-//
+// StatsPanels component to display GitHub statistics images
 export default function StatsPanels({ login }) {
   if (!login) return null;
   return (
