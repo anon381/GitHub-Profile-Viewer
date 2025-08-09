@@ -32,7 +32,7 @@ function App() {
 
   return (
     <div className="github-viewer">
-      <h1>GitHub Profile Viewer</h1>
+      <h1>GitHub Profiles Viewer</h1>
       <form onSubmit={fetchProfile} className="search-form">
         <input
           type="text"
