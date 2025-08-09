@@ -1,3 +1,5 @@
+html,body {height:100%;margin:0;padding:0;}
+body {background:radial-gradient(circle at 20% 20%,#262a44 0%,#1b1d2b 55%,#14151f 100%);color:#fff;-webkit-font-smoothing:antialiased;}
 #root {max-width:1200px;margin:0 auto;padding:2rem;text-align:center;font-family:system-ui,Arial,sans-serif;}
 .github-viewer{display:flex;flex-direction:column;gap:2rem;animation:fadeIn .6s ease;}
 .search-form{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
