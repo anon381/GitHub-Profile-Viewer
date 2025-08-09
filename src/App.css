@@ -168,7 +168,7 @@ html, body {
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
-  background: rgba(255,255,255,0.10);
+  background: rgba(22,36,71,0.10);
   border-radius: 1.5rem;
   box-shadow: 0 4px 32px 0 rgba(80,0,120,0.08);
   padding: 2rem 1rem 3rem 1rem;
@@ -177,14 +177,14 @@ html, body {
 
 /* Profile card with glassmorphism and animation */
 .profile-card {
-  background: rgba(26,92,60,0.18);
+  background: rgba(22,36,71,0.18);
   backdrop-filter: blur(12px);
   padding: 2.3rem 2rem;
   border-radius: 26px;
   color: #fff;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 16px 40px -12px rgba(15,61,46,.35);
+  box-shadow: 0 16px 40px -12px rgba(22,36,71,.35);
   animation: slideUp 0.7s 0.2s cubic-bezier(.4,1.4,.6,1) both;
   width: 100%;
   margin-bottom: 2.2rem;
@@ -232,11 +232,11 @@ html, body {
   animation: fadeIn 1s 0.5s cubic-bezier(.4,1.4,.6,1) both;
 }
 .stats span {
-  background: rgba(26,92,60,0.13);
+  background: rgba(22,36,71,0.13);
   padding: .65rem 1rem;
   border-radius: 14px;
   font-size: .98rem;
-  box-shadow: 0 2px 8px 0 #1a5c3c22;
+  box-shadow: 0 2px 8px 0 #16244722;
   position: relative;
   overflow: hidden;
   animation: popIn 0.8s 0.6s cubic-bezier(.4,1.4,.6,1) both;
@@ -306,7 +306,7 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(26,92,60,0.13);
+  background: rgba(22,36,71,0.13);
   padding: 1.05rem 1.15rem;
   border-radius: 18px;
   transition: background .35s, transform .3s, box-shadow .4s;
@@ -320,13 +320,13 @@ html, body {
   inset: 0;
   opacity: 0;
   transition: opacity .45s;
-  background: linear-gradient(135deg,rgba(100,108,255,.09),rgba(79,84,192,.06));
+    background: linear-gradient(135deg,rgba(100,108,255,.09),rgba(22,36,71,.06));
   pointer-events: none;
 }
 .repo-list li:hover {
-  background: #1a5c3c33;
+  background: #16244733;
   transform: translateY(-5px) scale(1.03);
-  box-shadow: 0 10px 22px -12px rgba(15,61,46,.25);
+  box-shadow: 0 10px 22px -12px rgba(22,36,71,.25);
 }
 .repo-list li:hover:before {
   opacity: 1;
