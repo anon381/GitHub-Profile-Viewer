@@ -8,6 +8,8 @@ function App() {
   const [repos, setRepos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 10; // requirement: paginate after 10
 
   const fetchProfile = async (e) => {
     e.preventDefault();
@@ -16,7 +18,7 @@ function App() {
     setError('');
     setProfile(null);
     setRepos([]);
-    try {
+  try {
       const userRes = await fetch(`https://api.github.com/users/${username}`);
       if (!userRes.ok) throw new Error('User not found');
       const userData = await userRes.json();
@@ -36,7 +38,8 @@ function App() {
       }
       // Sort by last push date desc
       allRepos.sort((a,b)=> new Date(b.pushed_at) - new Date(a.pushed_at));
-      setRepos(allRepos);
+  setRepos(allRepos);
+  setPage(1); // reset pagination
     } catch (err) {
       setError(err.message || 'Error fetching data');
     } finally {
@@ -53,6 +56,21 @@ function App() {
   }, [repos]);
 
   const topLanguages = languageStats.slice(0,8);
+
+  const totalPages = Math.max(1, Math.ceil(repos.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageRepos = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return repos.slice(start, start + pageSize);
+  }, [repos, currentPage]);
+
+  const goPage = (p) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+    // scroll to repo list smoothly
+    const el = document.getElementById('repo-section');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div className="github-viewer">
@@ -113,17 +131,23 @@ function App() {
         </div>
       )}
       {repos.length > 0 && (
-        <div className="repo-list">
+        <div className="repo-list" id="repo-section">
           <h3>Repositories ({repos.length})</h3>
-          <ul>
-            {repos.slice(0,50).map(repo => (
+          <ul className={repos.length > 10 ? 'repo-grid two-col' : ''}>
+            {pageRepos.map(repo => (
               <li key={repo.id}>
                 <a href={repo.html_url} target="_blank" rel="noopener noreferrer">{repo.name}</a>
                 <span>★ {repo.stargazers_count}</span>
               </li>
             ))}
           </ul>
-          {repos.length > 50 && <p style={{fontSize:'0.7rem', opacity:0.6}}>Showing 50 of {repos.length} (limit)</p>}
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button onClick={() => goPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
+              <span>Page {currentPage} / {totalPages}</span>
+              <button onClick={() => goPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+            </div>
+          )}
         </div>
       )}
       <footer>Data from GitHub public API & community endpoints; images may be cached or rate limited.</footer>

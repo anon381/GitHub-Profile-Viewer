@@ -17,6 +17,7 @@
 .repo-list{text-align:left;background:#1f1f29;padding:1.5rem 1.25rem 2.25rem;border-radius:18px;box-shadow:0 6px 24px -8px rgba(0,0,0,.55);animation:fadeIn .7s ease}
 .repo-list h3{margin-top:0;font-size:1.25rem;letter-spacing:.5px}
 .repo-list ul{list-style:none;margin:0;padding:0;display:grid;gap:.85rem}
+.repo-grid.two-col{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
 .repo-list li{display:flex;justify-content:space-between;align-items:center;background:#2b2d42;padding:.9rem 1rem;border-radius:14px;transition:background .3s,transform .25s}
 .repo-list li:hover{background:#343753;transform:translateY(-3px)}
 .repo-list a{color:#e0e6ff;font-weight:500;text-decoration:none}
@@ -28,3 +29,7 @@
 @keyframes slideUp{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.6)}80%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
 footer{margin-top:2rem;font-size:.75rem;opacity:.6}
+.pagination{display:flex;align-items:center;gap:1rem;justify-content:center;margin-top:1.25rem;font-size:.85rem}
+.pagination button{padding:.5rem .9rem;background:#2b2d42;border:1px solid #3a3d55;border-radius:8px;cursor:pointer;transition:background .25s,transform .2s}
+.pagination button:hover:not(:disabled){background:#343753;transform:translateY(-2px)}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
