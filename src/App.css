@@ -1,25 +1,31 @@
 #root {max-width:1200px;margin:0 auto;padding:2rem;text-align:center;font-family:system-ui,Arial,sans-serif;}
 .github-viewer{display:flex;flex-direction:column;gap:2rem;animation:fadeIn .6s ease;}
 .search-form{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap}
-.search-form input{padding:.75rem 1rem;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#fff;min-width:240px;transition:box-shadow .3s,border-color .3s}
-.search-form input:focus{outline:none;border-color:#646cff;box-shadow:0 0 0 3px rgba(100,108,255,.25)}
-.search-form button{background:linear-gradient(135deg,#646cff,#4f54c0);border:none;color:#fff;font-weight:600;letter-spacing:.5px;box-shadow:0 4px 12px -2px rgba(0,0,0,.4);transition:transform .2s,box-shadow .3s;padding:.75rem 1.25rem;border-radius:10px}
-.search-form button:hover{transform:translateY(-2px);box-shadow:0 6px 18px -4px rgba(0,0,0,.6)}
+.search-form input{padding:.85rem 1.1rem;border-radius:10px;border:1px solid #444;background:#1e1e1e;color:#fff;min-width:260px;transition:box-shadow .35s,border-color .35s, background .4s}
+.search-form input:focus{outline:none;border-color:#646cff;box-shadow:0 0 0 4px rgba(100,108,255,.25);background:#232331}
+.search-form button{background:linear-gradient(135deg,#646cff,#4f54c0);border:none;color:#fff;font-weight:600;letter-spacing:.5px;box-shadow:0 6px 16px -4px rgba(0,0,0,.45);transition:transform .25s,box-shadow .4s,padding .25s; padding:.85rem 1.35rem;border-radius:14px}
+.search-form button:hover{transform:translateY(-3px);box-shadow:0 10px 26px -8px rgba(0,0,0,.6)}
+.search-form button:active{transform:translateY(-1px) scale(.97)}
 .search-form button:disabled{opacity:.5;cursor:not-allowed}
-.profile-card{background:#2b2d42;padding:1.75rem 1.5rem;border-radius:20px;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);animation:slideUp .6s ease}
+.profile-card{background:#2b2d42;padding:2.25rem 2rem;border-radius:26px;color:#fff;position:relative;overflow:hidden;box-shadow:0 16px 40px -12px rgba(0,0,0,.55);animation:slideUp .6s ease;max-width:900px;margin:0 auto}
 .profile-card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.08),transparent 60%)}
-.avatar{width:140px;height:140px;border-radius:50%;object-fit:cover;border:4px solid #646cff;box-shadow:0 0 0 4px rgba(100,108,255,.25);animation:popIn .5s ease}
-.profile-card h2{margin:.85rem 0 .35rem;font-size:1.75rem}
-.profile-card p{margin:.25rem 0;line-height:1.4}
+.avatar{width:168px;height:168px;border-radius:50%;object-fit:cover;border:5px solid #646cff;box-shadow:0 0 0 5px rgba(100,108,255,.25);animation:popIn .55s ease}
+.profile-card h2{margin:1rem 0 .45rem;font-size:2.1rem;letter-spacing:.5px}
+.profile-card p{margin:.35rem 0;line-height:1.5}
 .profile-card a{color:#a5b4ff;font-weight:600;text-decoration:none}
-.stats{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
-.stats span{background:#1e1f2b;padding:.55rem .9rem;border-radius:12px;font-size:.85rem;box-shadow:inset 0 0 0 1px #35384d}
-.repo-list{text-align:left;background:#1f1f29;padding:1.5rem 1.25rem 2.25rem;border-radius:18px;box-shadow:0 6px 24px -8px rgba(0,0,0,.55);animation:fadeIn .7s ease}
-.repo-list h3{margin-top:0;font-size:1.25rem;letter-spacing:.5px}
-.repo-list ul{list-style:none;margin:0;padding:0;display:grid;gap:.85rem}
-.repo-grid.two-col{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
-.repo-list li{display:flex;justify-content:space-between;align-items:center;background:#2b2d42;padding:.9rem 1rem;border-radius:14px;transition:background .3s,transform .25s}
-.repo-list li:hover{background:#343753;transform:translateY(-3px)}
+.stats{display:flex;gap:1.1rem;justify-content:center;flex-wrap:wrap;margin-top:1.1rem}
+.stats span{background:#1e1f2b;padding:.65rem 1rem;border-radius:14px;font-size:.9rem;box-shadow:inset 0 0 0 1px #35384d;position:relative;overflow:hidden}
+.stats span:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(100,108,255,.15),transparent 70%);opacity:0;transition:opacity .5s}
+.stats span:hover:before{opacity:1}
+.repo-list{text-align:left;background:#1f1f29;padding:2rem 1.75rem 2.5rem;border-radius:24px;box-shadow:0 10px 34px -14px rgba(0,0,0,.55);animation:fadeIn .7s ease;max-width:1100px;margin:0 auto}
+.repo-list h3{margin-top:0;font-size:1.35rem;letter-spacing:.6px}
+.repo-list ul{list-style:none;margin:0;padding:0;display:grid;gap:1rem}
+/* Always show repositories in two columns on wider screens */
+.repo-list ul{grid-template-columns:repeat(2,minmax(0,1fr))}
+.repo-list li{display:flex;justify-content:space-between;align-items:center;background:#2b2d42;padding:1.05rem 1.15rem;border-radius:18px;transition:background .35s,transform .3s, box-shadow .4s;position:relative;overflow:hidden;animation:itemFade .6s ease both}
+.repo-list li:before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .45s;background:linear-gradient(135deg,rgba(100,108,255,.09),rgba(79,84,192,.06));pointer-events:none}
+.repo-list li:hover{background:#343753;transform:translateY(-5px);box-shadow:0 10px 22px -12px rgba(0,0,0,.65)}
+.repo-list li:hover:before{opacity:1}
 .repo-list a{color:#e0e6ff;font-weight:500;text-decoration:none}
 .repo-list span{font-size:.8rem;opacity:.85}
 .extra-stats{display:grid;gap:1.5rem}
@@ -28,8 +34,32 @@
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideUp{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.6)}80%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+@keyframes itemFade{0%{opacity:0;transform:translateY(14px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
 footer{margin-top:2rem;font-size:.75rem;opacity:.6}
 .pagination{display:flex;align-items:center;gap:1rem;justify-content:center;margin-top:1.25rem;font-size:.85rem}
-.pagination button{padding:.5rem .9rem;background:#2b2d42;border:1px solid #3a3d55;border-radius:8px;cursor:pointer;transition:background .25s,transform .2s}
-.pagination button:hover:not(:disabled){background:#343753;transform:translateY(-2px)}
+.pagination button{padding:.6rem 1rem;background:#2b2d42;border:1px solid #3a3d55;border-radius:10px;cursor:pointer;transition:background .3s,transform .25s, box-shadow .4s}
+.pagination button:hover:not(:disabled){background:#343753;transform:translateY(-3px);box-shadow:0 6px 16px -8px rgba(0,0,0,.6)}
 .pagination button:disabled{opacity:.4;cursor:not-allowed}
+/* Stagger list items */
+.repo-list li:nth-child(1){animation-delay:.03s}
+.repo-list li:nth-child(2){animation-delay:.06s}
+.repo-list li:nth-child(3){animation-delay:.09s}
+.repo-list li:nth-child(4){animation-delay:.12s}
+.repo-list li:nth-child(5){animation-delay:.15s}
+.repo-list li:nth-child(6){animation-delay:.18s}
+.repo-list li:nth-child(7){animation-delay:.21s}
+.repo-list li:nth-child(8){animation-delay:.24s}
+.repo-list li:nth-child(9){animation-delay:.27s}
+.repo-list li:nth-child(10){animation-delay:.30s}
+@media (max-width: 680px){
+	.profile-card{padding:1.75rem 1.25rem;border-radius:22px}
+	.avatar{width:140px;height:140px}
+	.repo-list ul{grid-template-columns:1fr}
+	.repo-list{padding:1.6rem 1.2rem 2.1rem;border-radius:20px}
+}
+@media (min-width: 1200px){
+	.github-viewer{gap:2.5rem}
+	.profile-card{display:grid;grid-template-columns:180px 1fr;align-items:center;column-gap:2rem;text-align:left}
+	.profile-card h2{text-align:left}
+	.stats{justify-content:flex-start}
+}
