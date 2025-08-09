@@ -9,7 +9,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 10; // requirement: paginate after 10
+  const pageSize = 10; // paginate after 10; two-column layout starts at >5
 
   const fetchProfile = async (e) => {
     e.preventDefault();
@@ -115,15 +115,22 @@ function App() {
       {topLanguages.length > 0 && (
         <div className="repo-list" style={{marginTop: '1.5rem'}}>
           <h3>Language Usage</h3>
-          <ul style={{display:'block'}}>
+          <ul style={{
+            listStyle:'none',
+            margin:0,
+            padding:0,
+            display:'grid',
+            gap:'0.85rem',
+            gridTemplateColumns: topLanguages.length > 5 ? 'repeat(auto-fit,minmax(240px,1fr))' : '1fr'
+          }}>
             {topLanguages.map(l => (
-              <li key={l.lang} style={{display:'block', background:'transparent', padding:'.35rem 0'}}>
-                <div style={{display:'flex', justifyContent:'space-between', fontSize:'.8rem', marginBottom:'.2rem'}}>
-                  <strong>{l.lang}</strong>
-                  <span>{l.count} repos · {l.percent.toFixed(1)}%</span>
+              <li key={l.lang} style={{background:'#2b2d42', padding:'.65rem .75rem .9rem', borderRadius:'14px', position:'relative', overflow:'hidden'}}>
+                <div style={{display:'flex', justifyContent:'space-between', fontSize:'.75rem', marginBottom:'.35rem', fontWeight:600}}>
+                  <span>{l.lang}</span>
+                  <span>{l.count} · {l.percent.toFixed(1)}%</span>
                 </div>
-                <div style={{height:'6px', borderRadius:'4px', background:'#2b2d42', overflow:'hidden'}}>
-                  <div style={{width:`${l.percent}%`, height:'100%', background:'#646cff', transition:'width .6s'}} />
+                <div style={{height:'8px', borderRadius:'5px', background:'#1f1f29', overflow:'hidden', boxShadow:'inset 0 0 0 1px #35384d'}}>
+                  <div style={{width:`${l.percent}%`, height:'100%', background:'linear-gradient(90deg,#646cff,#4f54c0)', transition:'width .7s ease'}} />
                 </div>
               </li>
             ))}
@@ -133,7 +140,7 @@ function App() {
       {repos.length > 0 && (
         <div className="repo-list" id="repo-section">
           <h3>Repositories ({repos.length})</h3>
-          <ul className={repos.length > 10 ? 'repo-grid two-col' : ''}>
+          <ul className={repos.length > 5 ? 'repo-grid two-col' : ''}>
             {pageRepos.map(repo => (
               <li key={repo.id}>
                 <a href={repo.html_url} target="_blank" rel="noopener noreferrer">{repo.name}</a>
