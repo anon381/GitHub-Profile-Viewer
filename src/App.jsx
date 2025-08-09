@@ -13,6 +13,10 @@ function App() {
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  const envToken = import.meta.env.VITE_GITHUB_TOKEN; // build-time token
+  const [userToken, setUserToken] = useState(()=> localStorage.getItem('gpv_token') || '');
+  const effectiveToken = (userToken || envToken || '').trim();
+  const baseHeaders = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
 
   const fetchProfile = async (e) => {
     e.preventDefault();
@@ -22,7 +26,7 @@ function App() {
     setProfile(null);
     setRepos([]);
   try {
-      const userRes = await fetch(`https://api.github.com/users/${username}`);
+  const userRes = await fetch(`https://api.github.com/users/${username}` , { headers: { ...baseHeaders } });
       if (!userRes.ok) {
         let msg = 'Error fetching user';
         try {
@@ -61,7 +65,7 @@ function App() {
       const allRepos = [];
       let pageNum = 1;
       while (true) { // fetch all pages until last
-        const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&page=${pageNum}&sort=updated`);
+  const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&page=${pageNum}&sort=updated`, { headers: { ...baseHeaders } });
         if (!reposRes.ok) break;
         const batch = await reposRes.json();
         if (!Array.isArray(batch) || batch.length === 0) break;
@@ -92,7 +96,7 @@ function App() {
       for (const r of slice) {
         try {
           if (!r.languages_url) continue;
-          const res = await fetch(r.languages_url);
+          const res = await fetch(r.languages_url, { headers: { ...baseHeaders } });
           if (!res.ok) continue;
           const data = await res.json();
           Object.entries(data).forEach(([lang, bytes]) => {
@@ -171,8 +175,20 @@ function App() {
           onChange={e => setUsername(e.target.value.trim())}
           required
         />
+        <input
+          type="password"
+          placeholder="Token (optional)"
+          value={userToken}
+          onChange={e => { setUserToken(e.target.value); localStorage.setItem('gpv_token', e.target.value); }}
+          style={{width:'170px'}}
+        />
         <button type="submit" disabled={loading || !username}>Search</button>
       </form>
+      {effectiveToken && (
+        <p style={{ marginTop: '-0.75rem', fontSize: '.65rem', opacity: 0.55 }}>
+          Auth token active ({userToken ? 'user' : 'env'})
+        </p>
+      )}
       {loading && <p>Loading...</p>}
       {error && <p style={{color: 'salmon'}}>{error}</p>}
       {profile && (
