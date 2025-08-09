@@ -185,24 +185,26 @@ function App() {
     <div className="github-viewer">
      
       <div id="top-bar">
-        <h1>GitHub Profile Viewer</h1>
-        <form onSubmit={fetchProfile} className="search-form">
-          <input
-            type="text"
-            placeholder="Enter GitHub username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Token (optional)"
-            value={userToken}
-            onChange={e => { setUserToken(e.target.value); localStorage.setItem('gpv_token', e.target.value); }}
-            style={{ width: '170px' }}
-          />
-          <button type="submit" disabled={loading || !username}>Search</button>
-        </form>
+        <div className="top-bar-center">
+          <h1>GitHub Profile Viewer</h1>
+          <form onSubmit={fetchProfile} className="search-form">
+            <input
+              type="text"
+              placeholder="Enter GitHub username"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Token (optional)"
+              value={userToken}
+              onChange={e => { setUserToken(e.target.value); localStorage.setItem('gpv_token', e.target.value); }}
+              style={{ width: '170px' }}
+            />
+            <button type="submit" disabled={loading || !username}>Search</button>
+          </form>
+        </div>
       </div>
       <div className="main-content-under-header">
         {loading && <p>Loading...</p>}

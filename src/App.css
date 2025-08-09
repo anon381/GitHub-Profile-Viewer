@@ -1,3 +1,10 @@
+#top-bar .top-bar-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 .token-status-bar {
   width: 100%;
   text-align: center;
@@ -28,7 +35,7 @@
     padding: 0;
     width: 100vw;
     min-height: 100vh;
-    background: radial-gradient(circle at 20% 20%, #23243a 0%, #181a28 60%, #10111a 100%);
+  background: linear-gradient(135deg, #646cff 0%, #4f54c0 50%, #23243a 100%);
     color: #f6f7fa;
     font-family: system-ui, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -54,6 +61,7 @@
     padding: 0 0 1.2rem 0;
     background: none;
     width: 100%;
+    text-align: center;
   }
   #top-bar h1 {
     margin: 0 0 1.1rem;
@@ -63,6 +71,12 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    text-align: center;
+  }
+  .search-form {
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
   }
   .token-status-bar {
     width: 100%;
@@ -90,6 +104,15 @@
     flex-wrap: wrap;
     gap: 1rem;
     justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  .search-form input,
+  .search-form button {
+    text-align: center;
   }
   .search-form input {
     padding: .9rem 1.1rem;
@@ -105,7 +128,7 @@
     outline: none;
     border-color: #646cff;
     box-shadow: 0 0 0 4px rgba(100,108,255,.18);
-    background: #23243a;
+  /* background removed for unified bg */
   }
   .search-form input[type=password] {
     min-width: 150px;
@@ -139,7 +162,7 @@
     margin-top: 2.2rem;
   }
   .profile-card {
-    background: #23243a;
+  /* background removed for unified bg */
     padding: 2.3rem 2rem;
     border-radius: 26px;
     color: #fff;
@@ -219,14 +242,14 @@
   .extra-stats img {
     max-width: 100%;
     border-radius: 16px;
-    background: #1f1f29;
+  /* background removed for unified bg */
     padding: .75rem;
     box-shadow: 0 4px 20px -8px rgba(0,0,0,.55);
     animation: fadeIn .9s ease;
   }
   .repo-list {
     text-align: center;
-    background: #1f1f29;
+  /* background removed for unified bg */
     padding: 2rem 1.75rem 2.5rem;
     border-radius: 24px;
     box-shadow: 0 10px 34px -14px rgba(0,0,0,.55);
