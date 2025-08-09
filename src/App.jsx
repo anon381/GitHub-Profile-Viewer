@@ -2,250 +2,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import './App.css';
 
-function App() {
-  const [username, setUsername] = useState('');
-  const [profile, setProfile] = useState(null);
-  const [repos, setRepos] = useState([]);
-  const [languageBytes, setLanguageBytes] = useState({}); // aggregated bytes per language (fetched after repos)
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  // Reintroduced pagination & capped language fetch with caching
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  const envToken = import.meta.env.VITE_GITHUB_TOKEN; // build-time token
-  const [userToken, setUserToken] = useState(()=> localStorage.getItem('gpv_token') || '');
-  const effectiveToken = (userToken || envToken || '').trim();
-  const baseHeaders = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
-
-  const fetchProfile = async (e) => {
-    e.preventDefault();
-    if (!username) return;
-    setLoading(true);
-    setError('');
-    setProfile(null);
-    setRepos([]);
-  try {
-  const userRes = await fetch(`https://api.github.com/users/${username}` , { headers: { ...baseHeaders } });
-      if (!userRes.ok) {
-        let msg = 'Error fetching user';
-        try {
-          const body = await userRes.json();
-          if (body && body.message) msg = body.message;
-        } catch {}
-        if (userRes.status === 404) msg = 'User not found';
-        else if (userRes.status === 403 && /rate limit/i.test(msg)) {
-          msg = 'GitHub rate limit exceeded. Try again later or add a tokenized version.';
-        } else if (userRes.status === 403) {
-          msg = 'Access forbidden (403). Possibly rate limited.';
-        }
-        throw new Error(msg);
-      }
-      const userData = await userRes.json();
-      setProfile(userData);
-
-      // Cache check
-      const cacheKey = `gpv_user_${username}`;
-      try {
-        const raw = localStorage.getItem(cacheKey);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Date.now() - parsed.time < CACHE_TTL) {
-            setProfile(parsed.profile);
-            setRepos(parsed.repos || []);
-            setLanguageBytes(parsed.languageBytes || {});
-            setPage(1);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch {}
-
-      // Fetch ALL public repos (no artificial cap beyond natural pagination)
-      const allRepos = [];
-      let pageNum = 1;
-      while (true) { // fetch all pages until last
-  const reposRes = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&page=${pageNum}&sort=updated`, { headers: { ...baseHeaders } });
-        if (!reposRes.ok) break;
-        const batch = await reposRes.json();
-        if (!Array.isArray(batch) || batch.length === 0) break;
-        allRepos.push(...batch);
-        if (batch.length < 100) break; // last page
-        pageNum++;
-      }
-      // Sort by last push date desc
-      allRepos.sort((a,b)=> new Date(b.pushed_at) - new Date(a.pushed_at));
-  setRepos(allRepos);
-      setLanguageBytes({}); // reset bytes aggregation when new search happens
-      // Store preliminary cache (without language bytes yet)
-      try { localStorage.setItem(cacheKey, JSON.stringify({ time: Date.now(), profile: userData, repos: allRepos, languageBytes: {} })); } catch {}
-    } catch (err) {
-      setError(err.message || 'Error fetching data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // After repos are fetched, fetch language byte breakdown for more accurate percentages.
-  useEffect(() => {
-    if (!repos.length) return;
-    let cancelled = false;
-    const fetchLanguages = async () => {
-      const slice = repos.slice(0, 20); // cap to first 20 repos for language aggregation
-      const agg = {};
-      for (const r of slice) {
-        try {
-          if (!r.languages_url) continue;
-          const res = await fetch(r.languages_url, { headers: { ...baseHeaders } });
-          if (!res.ok) continue;
-          const data = await res.json();
-          Object.entries(data).forEach(([lang, bytes]) => {
-            agg[lang] = (agg[lang] || 0) + (typeof bytes === 'number' ? bytes : 0);
-          });
-        } catch { /* swallow */ }
-        if (cancelled) return;
-      }
-      if (!cancelled) {
-        setLanguageBytes(agg);
-        // merge into cache if existing
-        try {
-          const cacheKey = `gpv_user_${username}`;
-          const raw = localStorage.getItem(cacheKey);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              parsed.languageBytes = agg;
-              parsed.time = Date.now();
-              localStorage.setItem(cacheKey, JSON.stringify(parsed));
-            }
-        } catch {}
-      }
-    };
-    fetchLanguages();
-    return () => { cancelled = true; };
-  }, [repos]);
-
-  const languageStats = useMemo(() => {
-    // Prefer byte-based stats if fetched; fallback to simple repo counts otherwise.
-    const entries = Object.keys(languageBytes).length
-      ? Object.entries(languageBytes).map(([lang, bytes]) => ({ lang, bytes }))
-      : (() => {
-          const tally = {};
-          repos.forEach(r => { if (r.language) tally[r.language] = (tally[r.language] || 0) + 1; });
-          return Object.entries(tally).map(([lang, count]) => ({ lang, count }));
-        })();
-    // Total (bytes or counts)
-    const total = entries.reduce((acc, e) => acc + (e.bytes || e.count || 0), 0);
-    return entries
-      .map(e => ({
-        lang: e.lang,
-        count: e.count ?? undefined,
-        bytes: e.bytes ?? undefined,
-        percent: total ? ((e.bytes || e.count || 0) / total) * 100 : 0,
-      }))
-      .sort((a,b)=> b.percent - a.percent);
-  }, [repos, languageBytes]);
-
-  const topLanguages = languageStats; // show all languages
-
-  // Pagination logic reintroduced
-  const totalPages = Math.max(1, Math.ceil(repos.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pageRepos = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return repos.slice(start, start + pageSize);
-  }, [repos, currentPage]);
-
-  const goPage = (p) => {
-    if (p < 1 || p > totalPages) return;
-    setPage(p);
-    const el = document.getElementById('repo-section');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  // Pagination removed; all repos displayed
-
-  return (
-    <div className="github-viewer">
-      <h1>GitHub Profile Viewer</h1>
-      <form onSubmit={fetchProfile} className="search-form">
-        <input
-          type="text"
-          placeholder="Enter GitHub username"
-          value={username}
-          onChange={e => setUsername(e.target.value.trim())}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Token (optional)"
-          value={userToken}
-          onChange={e => { setUserToken(e.target.value); localStorage.setItem('gpv_token', e.target.value); }}
-          style={{width:'170px'}}
-        />
-        <button type="submit" disabled={loading || !username}>Search</button>
-      </form>
-      {effectiveToken && (
-        <p style={{ marginTop: '-0.75rem', fontSize: '.65rem', opacity: 0.55 }}>
-          Auth token active ({userToken ? 'user' : 'env'})
-        </p>
-      )}
-      {loading && <p>Loading...</p>}
-      {error && <p style={{color: 'salmon'}}>{error}</p>}
-      {profile && (
-        <>
-          <div className="profile-card">
-            <img src={profile.avatar_url} alt={profile.login} className="avatar" />
-            <h2>{profile.name || profile.login}</h2>
-            {profile.bio && <p>{profile.bio}</p>}
-            <p>
-              <a href={profile.html_url} target="_blank" rel="noopener noreferrer">@{profile.login}</a>
-            </p>
-            <div className="stats">
-              <span>Followers: {profile.followers}</span>
-              <span>Following: {profile.following}</span>
-              <span>Repos: {profile.public_repos}</span>
-            </div>
-          </div>
-
-          <div className="panel-grid extra-stats">
-            <img src={`https://github-readme-streak-stats.herokuapp.com/?user=${profile.login}&theme=tokyonight&hide_border=true`} alt="GitHub Streak" loading="lazy" />
-            <img src={`https://github-readme-stats.vercel.app/api?username=${profile.login}&show_icons=true&theme=tokyonight&hide_border=true`} alt="GitHub Stats" loading="lazy" />
-            <img src={`https://github-readme-stats.vercel.app/api/top-langs/?username=${profile.login}&layout=compact&theme=tokyonight&hide_border=true`} alt="Top Languages (API)" loading="lazy" />
-            <img src={`https://github-profile-trophy.vercel.app/?username=${profile.login}&theme=onedark&no-frame=true&row=2&column=3`} alt="GitHub Trophies" loading="lazy" />
-            <img src={`https://ghchart.rshah.org/646cff/${profile.login}`} alt="Contribution Graph" loading="lazy" />
-          </div>
-        </>
-      )}
-      {topLanguages.length > 0 && (
-        <LanguageUsage languages={topLanguages} byteAccurate={Object.keys(languageBytes).length > 0} />
-      )}
-      {repos.length > 0 && (
-        <div className="repo-list" id="repo-section">
-          <h3>Repositories ({repos.length})</h3>
-          <ul className="two-col">
-            {pageRepos.map(repo => (
-              <li key={repo.id}>
-                <a href={repo.html_url} target="_blank" rel="noopener noreferrer">{repo.name}</a>
-                <span>★ {repo.stargazers_count}</span>
-              </li>
-            ))}
-          </ul>
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button onClick={() => goPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
-              <span>Page {currentPage} / {totalPages}</span>
-              <button onClick={() => goPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
-            </div>
-          )}
-        </div>
-      )}
-      <footer>Data from GitHub public API & community endpoints; images may be cached or rate limited.</footer>
-    </div>
-  );
-}
-
-export default App;
-
 // Mapping some common language names to simple inline SVG logos or emoji fallback
 const LANGUAGE_ICONS = {
   JavaScript: { fill: '#f7df1e', svg: '<circle cx="12" cy="12" r="11" fill="#f7df1e" />' },
@@ -265,13 +21,12 @@ const LANGUAGE_ICONS = {
 };
 
 function LanguageUsage({ languages, byteAccurate }) {
-  // Animation: progressive fill using inline style + requestAnimationFrame
   const [animatedPercents, setAnimatedPercents] = useState(() => languages.map(()=>0));
   useEffect(() => {
-  let frame;
+    let frame;
     const start = performance.now();
     const target = languages.map(l => l.percent);
-    const duration = 900; // ms
+    const duration = 900;
     const animate = (t) => {
       const progress = Math.min(1, (t - start) / duration);
       setAnimatedPercents(target.map(p => p * progress));
@@ -280,18 +35,17 @@ function LanguageUsage({ languages, byteAccurate }) {
     frame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(frame);
   }, [languages]);
-
   return (
-  <div className="repo-list" style={{marginTop:'1.5rem'}}>
-  <h3>Language Usage {byteAccurate ? '(by bytes)' : '(by repo count)'} </h3>
+    <div className="repo-list" style={{marginTop:'1.5rem'}}>
+      <h3>Language Usage {byteAccurate ? '(by bytes)' : '(by repo count)'} </h3>
       <ul style={{
-    listStyle:'none',margin:0,padding:0,display:'grid',gap:'1rem',
-    gridTemplateColumns: 'repeat(3, minmax(0,1fr))'
+        listStyle:'none',margin:0,padding:0,display:'grid',gap:'1rem',
+        gridTemplateColumns: 'repeat(3, minmax(0,1fr))'
       }}>
         {languages.map((l, idx) => {
           const icon = LANGUAGE_ICONS[l.lang];
-            const pctDisplay = l.percent.toFixed(1);
-            const animated = animatedPercents[idx] || 0;
+          const pctDisplay = l.percent.toFixed(1);
+          const animated = animatedPercents[idx] || 0;
           return (
             <li key={l.lang} style={{background:'#2b2d42',padding:'.9rem 1rem 1.1rem',borderRadius:18, display:'flex', flexDirection:'column', gap:'.55rem', position:'relative', overflow:'hidden'}}>
               <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:'.75rem'}}>
@@ -317,3 +71,194 @@ function LanguageUsage({ languages, byteAccurate }) {
     </div>
   );
 }
+
+function App() {
+  const [username, setUsername] = useState('');
+  const [profile, setProfile] = useState(null);
+  const [repos, setRepos] = useState([]);
+  const [languageBytes, setLanguageBytes] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const CACHE_TTL = 5 * 60 * 1000;
+  const envToken = import.meta.env.VITE_GITHUB_TOKEN;
+  const [userToken, setUserToken] = useState(() => localStorage.getItem('gpv_token') || '');
+  const effectiveToken = (userToken || envToken || '').trim();
+  const baseHeaders = effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {};
+
+  // Fetch profile and repos
+  const fetchProfile = async (e) => {
+    if (e) e.preventDefault();
+    setLoading(true);
+    setError('');
+    setProfile(null);
+    setRepos([]);
+    setLanguageBytes({});
+    setPage(1);
+    try {
+      // Check cache
+      const cacheKey = `gpv_cache_${username}`;
+      const cache = localStorage.getItem(cacheKey);
+      if (cache) {
+        const { profile, repos, languageBytes, ts } = JSON.parse(cache);
+        if (Date.now() - ts < CACHE_TTL) {
+          setProfile(profile);
+          setRepos(repos);
+          setLanguageBytes(languageBytes);
+          setLoading(false);
+          return;
+        }
+      }
+      // Fetch profile
+      const resp = await fetch(`https://api.github.com/users/${username}`, { headers: baseHeaders });
+      if (!resp.ok) throw new Error(resp.status === 404 ? 'User not found' : 'Error fetching profile');
+      const profileData = await resp.json();
+      setProfile(profileData);
+      // Fetch repos (all pages)
+      let allRepos = [];
+      let pageNum = 1;
+      while (true) {
+        const repoResp = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&page=${pageNum}`,
+          { headers: baseHeaders });
+        if (!repoResp.ok) throw new Error('Error fetching repos');
+        const repoPage = await repoResp.json();
+        allRepos = allRepos.concat(repoPage);
+        if (repoPage.length < 100) break;
+        pageNum++;
+      }
+      setRepos(allRepos);
+      // Fetch language bytes for each repo (limit to 30 for rate limit)
+      const langBytes = {};
+      await Promise.all(
+        allRepos.slice(0, 30).map(async (repo) => {
+          const langResp = await fetch(repo.languages_url, { headers: baseHeaders });
+          if (langResp.ok) {
+            const langs = await langResp.json();
+            for (const [lang, bytes] of Object.entries(langs)) {
+              langBytes[lang] = (langBytes[lang] || 0) + bytes;
+            }
+          }
+        })
+      );
+      setLanguageBytes(langBytes);
+      // Cache
+      localStorage.setItem(cacheKey, JSON.stringify({ profile: profileData, repos: allRepos, languageBytes: langBytes, ts: Date.now() }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const languageStats = useMemo(() => {
+    const entries = Object.keys(languageBytes).length
+      ? Object.entries(languageBytes).map(([lang, bytes]) => ({ lang, bytes }))
+      : (() => {
+          const tally = {};
+          repos.forEach(r => { if (r.language) tally[r.language] = (tally[r.language] || 0) + 1; });
+          return Object.entries(tally).map(([lang, count]) => ({ lang, count }));
+        })();
+    const total = entries.reduce((acc, e) => acc + (e.bytes || e.count || 0), 0);
+    return entries
+      .map(e => ({
+        lang: e.lang,
+        count: e.count ?? undefined,
+        bytes: e.bytes ?? undefined,
+        percent: total ? ((e.bytes || e.count || 0) / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.percent - a.percent);
+  }, [repos, languageBytes]);
+  const topLanguages = languageStats;
+  const totalPages = Math.max(1, Math.ceil(repos.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageRepos = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return repos.slice(start, start + pageSize);
+  }, [repos, currentPage]);
+  const goPage = (p) => {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+  };
+
+  return (
+    <div className="github-viewer">
+     
+      <div id="top-bar">
+        <h1>GitHub Profile Viewer</h1>
+        <form onSubmit={fetchProfile} className="search-form">
+          <input
+            type="text"
+            placeholder="Enter GitHub username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Token (optional)"
+            value={userToken}
+            onChange={e => { setUserToken(e.target.value); localStorage.setItem('gpv_token', e.target.value); }}
+            style={{ width: '170px' }}
+          />
+          <button type="submit" disabled={loading || !username}>Search</button>
+        </form>
+      </div>
+      <div className="main-content-under-header">
+        {loading && <p>Loading...</p>}
+        {error && <p style={{ color: 'salmon' }}>{error}</p>}
+        {profile && (
+          <>
+            <div className="profile-card">
+              <img src={profile.avatar_url} alt={profile.login} className="avatar" />
+              <h2>{profile.name || profile.login}</h2>
+              {profile.bio && <p>{profile.bio}</p>}
+              <p>
+                <a href={profile.html_url} target="_blank" rel="noopener noreferrer">@{profile.login}</a>
+              </p>
+              <div className="stats">
+                <span>Followers: {profile.followers}</span>
+                <span>Following: {profile.following}</span>
+                <span>Repos: {profile.public_repos}</span>
+              </div>
+            </div>
+            <div className="panel-grid extra-stats">
+              <img src={`https://github-readme-streak-stats.herokuapp.com/?user=${profile.login}&theme=tokyonight&hide_border=true`} alt="GitHub Streak" loading="lazy" />
+              <img src={`https://github-readme-stats.vercel.app/api?username=${profile.login}&show_icons=true&theme=tokyonight&hide_border=true`} alt="GitHub Stats" loading="lazy" />
+              <img src={`https://github-readme-stats.vercel.app/api/top-langs/?username=${profile.login}&layout=compact&theme=tokyonight&hide_border=true`} alt="Top Languages (API)" loading="lazy" />
+              <img src={`https://github-profile-trophy.vercel.app/?username=${profile.login}&theme=onedark&no-frame=true&row=2&column=3`} alt="GitHub Trophies" loading="lazy" />
+              <img src={`https://ghchart.rshah.org/646cff/${profile.login}`} alt="Contribution Graph" loading="lazy" />
+            </div>
+          </>
+        )}
+        {topLanguages.length > 0 && (
+          <LanguageUsage languages={topLanguages} byteAccurate={Object.keys(languageBytes).length > 0} />
+        )}
+        {repos.length > 0 && (
+          <div className="repo-list" id="repo-section">
+            <h3>Repositories ({repos.length})</h3>
+            <ul className="two-col">
+              {pageRepos.map(repo => (
+                <li key={repo.id}>
+                  <a href={repo.html_url} target="_blank" rel="noopener noreferrer">{repo.name}</a>
+                  <span>★ {repo.stargazers_count}</span>
+                </li>
+              ))}
+            </ul>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button onClick={() => goPage(currentPage - 1)} disabled={currentPage === 1}>Prev</button>
+                <span>Page {currentPage} / {totalPages}</span>
+                <button onClick={() => goPage(currentPage + 1)} disabled={currentPage === totalPages}>Next</button>
+              </div>
+            )}
+          </div>
+        )}
+        <footer>Data from GitHub public API & community endpoints; images may be cached or rate limited.</footer>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
