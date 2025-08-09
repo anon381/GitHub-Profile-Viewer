@@ -99,7 +99,7 @@ html, body {
   color: #7a8686;
   opacity: 1;
 }
-}
+
 .search-form input:focus {
   border-color: #1a5c3c;
   box-shadow: 0 0 0 4px rgba(26,92,60,.18);
@@ -284,7 +284,7 @@ html, body {
   border-radius: 18px;
   box-shadow: 0 2px 16px 0 #0006;
 }
-}
+
 .repo-list h3 {
   margin-top: 0;
   font-size: 1.35rem;
@@ -428,3 +428,4 @@ footer {
 
 :focus { outline: none; }
 :focus-visible { outline: 3px solid rgba(100,108,255,.22); outline-offset: 3px; border-radius: 6px }
+}
