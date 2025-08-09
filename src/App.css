@@ -86,7 +86,7 @@ html, body {
   border-radius: 14px;
   border: 1px solid #1a5c3c;
   background: transparent;
-  color: #b0b8b8;
+  color: #fff;
   min-width: 220px;
   box-shadow: none;
   outline: none;
@@ -96,7 +96,8 @@ html, body {
   -moz-appearance: none;
 }
 .search-form input::placeholder {
-  color: #7a8686;
+  color: #1a5c3c;
+  font-weight: bold;
   opacity: 1;
 }
 
@@ -107,7 +108,7 @@ html, body {
 .search-form button {
   background: transparent;
   border: 1px solid #1a5c3c;
-  color: #b0b8b8;
+  color: #fff;
   font-weight: 600;
   letter-spacing: .5px;
   box-shadow: none;
