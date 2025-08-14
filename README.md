@@ -19,6 +19,8 @@ Enter any GitHub username to instantly view their public profile, including:
 - Clean, modern UI
 - See user profile details and repositories
 - Built with React functional components and hooks
+  
+  ---
 ## Tech Stack
 - React
 - Vite
