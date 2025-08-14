@@ -9,6 +9,7 @@ Enter any GitHub username to instantly view their public profile, including:
 ## How to use
 1. **Install dependencies:**
    ```sh
+   npm install
 2. **Start the development server:**
    ```sh
    npm run dev
