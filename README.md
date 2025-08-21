@@ -2,10 +2,37 @@
 
 This project is a web app for viewing GitHub profiles, built with **React** and **Vite**.
 ## What does it do?
-Enter any GitHub username to instantly view their public profile, including:
-- Avatar, name, and bio
-- Followers, following, and public repo count
-- A list of their latest public repositories (with stars)
+
+## Features
+
+- **Basic Profile Info**
+  - Avatar (profile picture)
+  - Name
+  - Bio
+
+- **Statistics**
+  - Followers
+  - Following
+  - Public repository count
+
+- **Repositories**
+  - Latest public repositories
+  - Stars per repository
+
+- **Activity / Status**
+  - GitHub status (active/recently online)
+  - Number of commits
+  - Number of contributions (yearly contribution graph)
+
+- **Gamification**
+  - GitHub trophies
+
+## Usage
+
+1. Enter any GitHub username in the input field.
+2. View the user's profile info, latest repositories, and contributions.
+3. See their GitHub trophies and activity stats.
+
 ## How to use
 1. **Install dependencies:**
    ```sh
