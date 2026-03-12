@@ -54,3 +54,7 @@ This project is a web app for viewing GitHub profiles, built with **React** and 
 - JavaScript (ES6+)
 ---
 
+
+
+
+> ## THANK YOU
